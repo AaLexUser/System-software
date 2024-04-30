@@ -12,6 +12,7 @@ struct ThreadControl {
   pthread_mutex_t shared_lock = PTHREAD_MUTEX_INITIALIZER;
   pthread_cond_t prod_cond = PTHREAD_COND_INITIALIZER;
   pthread_cond_t cons_cond = PTHREAD_COND_INITIALIZER;
+  pthread_barrier_t barrier;
   bool isReady = false;
   bool isFinished = false;
 
@@ -140,18 +141,17 @@ void *consumer_routine(void *arg) {
   Consumer *consumer = static_cast<Consumer *>(arg);
   int sum = 0;
   pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
+  pthread_barrier_wait(&control.barrier);
   while (!control.isFinished) {
     pthread_mutex_lock(&control.shared_lock);
     while (!control.isReady && !control.isFinished) {
       pthread_cond_wait(&control.cons_cond, &control.shared_lock);
     }
-    if (control.isFinished) {
-      pthread_mutex_unlock(&control.shared_lock);
-      break;
+    if(control.isReady) {
+      sum += *consumer->shared;
+      control.isReady = false;
+      pr_debug(sum);
     }
-    sum += *consumer->shared;
-    control.isReady = false;
-    pr_debug(sum);
     pthread_cond_signal(&control.prod_cond);
     pthread_mutex_unlock(&control.shared_lock);
     if (consumer->sleep_limit > 0) {
@@ -163,6 +163,7 @@ void *consumer_routine(void *arg) {
 /* interrupt random consumer while producer is running */
 void *consumer_interruptor_routine(void *arg) {
   Interruptor *interruptor = static_cast<Interruptor *>(arg);
+  pthread_barrier_wait(&control.barrier);
   while (!control.isFinished) {
     int idx = rand() % interruptor->num_threads;
     pthread_cancel(interruptor->consumer_pool_ptr[idx]);
@@ -177,6 +178,7 @@ void *consumer_interruptor_routine(void *arg) {
 int run_threads(InputData input_data) {
   isDebug = input_data.debug;
   int shared = 0;
+  pthread_barrier_init(&control.barrier, nullptr, input_data.num_threads + 1);
   pthread_t producer;
   Producer pr_entity = Producer(&shared, input_data.data);
   pthread_create(&producer, nullptr, producer_routine, &pr_entity);
@@ -202,7 +204,7 @@ int run_threads(InputData input_data) {
     total_sum += *static_cast<int *>(result);
     delete static_cast<int *>(result);
   }
-
+  pthread_barrier_destroy(&control.barrier);
   delete[] consumer_pool_ptr;
   return total_sum;
 }

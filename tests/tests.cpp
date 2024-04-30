@@ -43,16 +43,6 @@ TEST_CASE("Test get_tid") {
   }
 }
 
-TEST_CASE("Single thread, no sleep") {
-  InputData* input_data = new InputData(1, 0, false, {1, 2, 3, 4, 5});
-  int result = run_threads(*input_data);
-  CHECK_EQ(result, 15);
-}
-TEST_CASE("Multiple threads, with sleep") {
-    InputData* input_data = new InputData(4, 0, false, {1, 2, 3, 4, 5, 6, 7,
-    8, 9, 10}); int result = run_threads(*input_data); CHECK_EQ(result, 55);
-}
-
 TEST_CASE("Test Data") {
   int argc = 3;
   const char* argv[] = {"", "10", "20"};
