@@ -147,7 +147,7 @@ void *consumer_routine(void *arg) {
     while (!control.isReady && !control.isFinished) {
       pthread_cond_wait(&control.cons_cond, &control.shared_lock);
     }
-    if(control.isReady) {
+    if (control.isReady) {
       sum += *consumer->shared;
       control.isReady = false;
       pr_debug(sum);
@@ -191,8 +191,10 @@ int run_threads(InputData input_data) {
   }
 
   pthread_t interruptor;
-  Interruptor intr_entity = Interruptor(consumer_pool_ptr, input_data.num_threads);
-  pthread_create(&interruptor, nullptr, consumer_interruptor_routine, &intr_entity);
+  Interruptor intr_entity =
+      Interruptor(consumer_pool_ptr, input_data.num_threads);
+  pthread_create(&interruptor, nullptr, consumer_interruptor_routine,
+                 &intr_entity);
 
   pthread_join(producer, nullptr);
   pthread_join(interruptor, nullptr);
