@@ -4,3 +4,5 @@ Makefile
 tests/doctest.h
 .clang-format
 .gitlab-ci.yml
+
+.vscode
