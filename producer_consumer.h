@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+#include <string>
 
 struct InputData {
   int num_threads;

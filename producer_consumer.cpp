@@ -178,18 +178,19 @@ int run_threads(InputData input_data) {
   isDebug = input_data.debug;
   int shared = 0;
   pthread_t producer;
-  pthread_create(&producer, nullptr, producer_routine,
-                 new Producer(&shared, input_data.data));
+  Producer pr_entity = Producer(&shared, input_data.data);
+  pthread_create(&producer, nullptr, producer_routine, &pr_entity);
 
   pthread_t *consumer_pool_ptr = new pthread_t[input_data.num_threads];
+  Consumer shared_consumer = Consumer(&shared, input_data.sleep_limit);
   for (int i = 0; i < input_data.num_threads; i++) {
     pthread_create(&consumer_pool_ptr[i], nullptr, consumer_routine,
-                   new Consumer(&shared, input_data.sleep_limit));
+                   &shared_consumer);
   }
 
   pthread_t interruptor;
-  pthread_create(&interruptor, nullptr, consumer_interruptor_routine,
-                 new Interruptor(consumer_pool_ptr, input_data.num_threads));
+  Interruptor intr_entity = Interruptor(consumer_pool_ptr, input_data.num_threads);
+  pthread_create(&interruptor, nullptr, consumer_interruptor_routine, &intr_entity);
 
   pthread_join(producer, nullptr);
   pthread_join(interruptor, nullptr);

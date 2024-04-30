@@ -48,10 +48,10 @@ TEST_CASE("Single thread, no sleep") {
   int result = run_threads(*input_data);
   CHECK_EQ(result, 15);
 }
-// TEST_CASE("Multiple threads, with sleep") {
-//     InputData* input_data = new InputData(4, 0, false, {1, 2, 3, 4, 5, 6, 7,
-//     8, 9, 10}); int result = run_threads(*input_data); CHECK_EQ(result, 55);
-// }
+TEST_CASE("Multiple threads, with sleep") {
+    InputData* input_data = new InputData(4, 0, false, {1, 2, 3, 4, 5, 6, 7,
+    8, 9, 10}); int result = run_threads(*input_data); CHECK_EQ(result, 55);
+}
 
 TEST_CASE("Test Data") {
   int argc = 3;
